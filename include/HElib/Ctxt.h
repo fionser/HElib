@@ -53,8 +53,7 @@
  * lists of handles is a prefix of the other. For example, one can add a
  * ciphertext wrt (1,s(X^2)) to another wrt (1,s(X^2),s^2(X^2)), but not
  * to another ciphertext wrt (1,s).
- **/ 
-
+ **/
 #include "DoubleCRT.h"
 
 class KeySwitch;
@@ -171,6 +170,11 @@ public:
   }
 
   friend istream& operator>>(istream& s, SKHandle& handle);
+
+  // Raw IO
+  void read(istream& str);
+  void write(ostream& str) const;
+
 };
 inline ostream& operator<<(ostream& s, const SKHandle& handle)
 {
@@ -211,6 +215,10 @@ public:
 
   CtxtPart(const DoubleCRT& other, const SKHandle& otherHandle): 
     DoubleCRT(other), skHandle(otherHandle) {}
+
+  void read(istream& str); 
+  void write(ostream& str);
+
 };
 istream& operator>>(istream& s, CtxtPart& p);
 ostream& operator<<(ostream& s, const CtxtPart& p);
@@ -249,6 +257,7 @@ const ZeroCtxtLike_type ZeroCtxtLike = ZeroCtxtLike_type();
 class Ctxt {
   friend class FHEPubKey;
   friend class FHESecKey;
+  friend class BasicAutomorphPrecon;
 
   const FHEcontext& context; // points to the parameters of this FHE instance
   const FHEPubKey& pubKey;   // points to the public encryption key;
@@ -285,6 +294,9 @@ class Ctxt {
   // result to *this.
   void keySwitchPart(const CtxtPart& p, const KeySwitch& W);
 
+  // interenal procedure used in key-swtching
+  void keySwitchDigits(const KeySwitch& W, std::vector<DoubleCRT>& digits);
+
   long getPartIndexByHandle(const SKHandle& hanle) const {
     for (size_t i=0; i<parts.size(); i++) 
       if (parts[i].skHandle==hanle) return i;
@@ -301,6 +313,8 @@ class Ctxt {
   Ctxt& privateAssign(const Ctxt& other);
  
 public:
+  //__attribute__((deprecated))
+  explicit
   Ctxt(const FHEPubKey& newPubKey, long newPtxtSpace=0); // constructor
 
   Ctxt(ZeroCtxtLike_type, const Ctxt& ctxt); 
@@ -420,6 +434,11 @@ public:
 
   //! @name Ciphertext maintenance
   ///@{
+
+  //! The number of digits needed, and added noise effect, of
+  //! key-switching one ciphertext part
+  std::pair<long, NTL::xdouble> computeKSNoise(long partIdx, long pSpace=0);
+
   //! Reduce plaintext space to a divisor of the original plaintext space
   void reducePtxtSpace(long newPtxtSpace);
 
@@ -529,10 +548,16 @@ public:
 
   //! @brief Returns log(noise-variance)/2 - log(q)
   double log_of_ratio() const
-  {return (log(getNoiseVar())/2 - context.logOfProduct(getPrimeSet()));}
+  {return (getNoiseVar()==0.0)? (-context.logOfProduct(getPrimeSet()))
+      : ((log(getNoiseVar())/2 - context.logOfProduct(getPrimeSet())) );}
   ///@}
   friend istream& operator>>(istream& str, Ctxt& ctxt);
   friend ostream& operator<<(ostream& str, const Ctxt& ctxt);
+  
+  //Raw IO
+  void write(ostream& str) const;
+  void read(istream& str);
+
 };
 
 inline IndexSet baseSetOf(const Ctxt& c) { 

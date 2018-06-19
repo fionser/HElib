@@ -341,6 +341,8 @@ public:
   //! @brief Generate bootstrapping data if needed, returns index of key
   long genRecryptData();
 
+  void convertToSymmetric();
+
   friend ostream& operator << (ostream& str, const FHESecKey& sk);
   friend istream& operator >> (istream& str, FHESecKey& sk);
   friend void writeSecKeyBinary(ostream& str, const FHESecKey& sk);

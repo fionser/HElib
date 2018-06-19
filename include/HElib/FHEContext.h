@@ -9,11 +9,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License. See accompanying LICENSE file.
  */
-
 #ifndef _FHEcontext_H_
 #define _FHEcontext_H_
 /**
- * @file FHEcontext.h
+ * @file FHEContext.h
  * @brief Keeps the parameters of an instance of the cryptosystem
  **/
 
@@ -123,8 +122,8 @@ public:
 
   FHEcontext(FHEcontext const& oth);
   void makeBootstrappable(const Vec<long>& mvec, long skWht=0,
-			  bool conservative=false, int cacheType=0)
-  { rcData.init(*this, mvec, skWht, conservative, cacheType); }
+			  bool conservative=false, bool build_cache=false)
+  { rcData.init(*this, mvec, skWht, conservative, build_cache); }
   bool isBootstrappable() const { return (rcData.alMod != NULL); }
 
   FHEcontext& operator=(const FHEcontext& other);
@@ -254,13 +253,31 @@ public:
   //! @brief read all other data associated with context
   friend istream& operator>> (istream &str, FHEcontext& context);
   ///@}
+
+  friend void writeContextBinary(ostream& str, const FHEcontext& context);
+  friend void readContextBinary(istream& str, FHEcontext& context);
+
 };
 
 //! @brief write [m p r gens ords] data
 void writeContextBase(ostream& s, const FHEcontext& context);
 //! @brief read [m p r gens ords] data, needed to construct context
-void readContextBase(istream& s, unsigned long& m, unsigned long& p, unsigned long& r,
+void readContextBase(istream& s, unsigned long& m,
+                     unsigned long& p, unsigned long& r,
 		     vector<long>& gens, vector<long>& ords);
+std::unique_ptr<FHEcontext> buildContextFromAscii(istream& str);
+
+//! @brief write [m p r gens ords] data
+void writeContextBaseBinary(ostream& str, const FHEcontext& context);
+void writeContextBinary(ostream& str, const FHEcontext& context);
+
+//! @brief read [m p r gens ords] data, needed to construct context
+void readContextBaseBinary(istream& s, unsigned long& m,
+                           unsigned long& p, unsigned long& r,
+                           vector<long>& gens, vector<long>& ords);
+std::unique_ptr<FHEcontext> buildContextFromBinary(istream& str);
+void readContextBinary(istream& str, FHEcontext& context);
+
 
 // VJS: compiler seems to need these declarations out here...wtf...
 

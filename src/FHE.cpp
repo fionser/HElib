@@ -923,6 +923,10 @@ long FHESecKey::genRecryptData()
   return (recryptKeyID=keyID); // return the new key-ID
 }
 
+void FHESecKey::convertToSymmetric()
+{
+    pubEncrKey.clear();
+}
 
 ostream& operator<<(ostream& str, const FHESecKey& sk)
 {
