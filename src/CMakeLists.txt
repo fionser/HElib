@@ -1,5 +1,5 @@
-file(GLOB HELIB_SRC_FILES RELATIVE "${CMAKE_SOURCE_DIR}/src" "*.cpp")
-file(GLOB TEST_FILES RELATIVE "${CMAKE_SOURCE_DIR}/src" "Test_*.cpp")
+file(GLOB HELIB_SRC_FILES ABSOLUTE "${CMAKE_SOURCE_DIR}/src" "*.cpp")
+file(GLOB TEST_FILES ABSOLUTE "${CMAKE_SOURCE_DIR}/src" "Test_*.cpp")
 
 ## Remove test files from the source file list.
 foreach(prg ${TEST_FILES})
